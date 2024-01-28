@@ -9,6 +9,7 @@ from tensorflow.keras.utils import to_categorical
 from sklearn.model_selection import train_test_split
 from keras.layers import Conv2D, MaxPooling2D, Dropout, Dense, Flatten
 from keras.regularizers import l2
+from sklearn.metrics import precision_score, recall_score, f1_score
 
 
 def prepare_data(path):
@@ -82,44 +83,30 @@ def train_model(path):
                   loss='categorical_crossentropy',
                   metrics=['accuracy'])
 
-    # ImageDataGenerator for data augmentation and preprocessing
-    datagen = ImageDataGenerator(rescale=1. / 255,
-                                 rotation_range=20,
-                                 # width_shift_range=0.2,
-                                 # height_shift_range=0.2,
-                                 shear_range=0.2,
-                                 # zoom_range=0.2,
-                                 horizontal_flip=True,
-                                 vertical_flip=True,
-                                 fill_mode='nearest')
+    # this will return the best validation accuracy, regardless what was in the last epoch
+    early_stopping = EarlyStopping(monitor='val_accuracy', mode='max', restore_best_weights=True, patience=400)
 
-    datagen_val = ImageDataGenerator(rescale=1. / 255)  # No augmentation for validation data
-
-    train_generator = datagen.flow(x_train, y_train, batch_size=16)
-    val_generator = datagen_val.flow(x_val, y_val, batch_size=16)
-    # ...
-
-    # early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
     # train the model
-    # history = model.fit(
-    #     train_generator,
-    #     epochs=200,
-    #     batch_size=32,
-    #     steps_per_epoch=len(train_generator),
-    #     validation_data=val_generator,
-    #     validation_steps=len(val_generator),
-    #     # callbacks=[early_stopping],
-    #     verbose=1
-    # )
-
-    # Train the model
-    history = model.fit(
+    model.fit(
         x_train, y_train,
         epochs=400,
         batch_size=64,
         validation_data=(x_val, y_val),
+        callbacks=[early_stopping],
         verbose=1
     )
+
+    y_val_pred = model.predict(x_val)
+    y_val_pred_classes = np.argmax(y_val_pred, axis=1)
+    y_val_true_classes = np.argmax(y_val, axis=1)
+
+    precision = precision_score(y_val_true_classes, y_val_pred_classes, average='weighted')
+    recall = recall_score(y_val_true_classes, y_val_pred_classes, average='weighted')
+    f1 = f1_score(y_val_true_classes, y_val_pred_classes, average='weighted')
+
+    print(f'Precision: {precision:.4f}')
+    print(f'Recall: {recall:.4f}')
+    print(f'F1 Score: {f1:.4f}')
 
     return model
 
@@ -133,4 +120,3 @@ def get_model(path):
 if __name__ == '__main__':
     path = './data/video/training_data'
     model = get_model(path)
-    # prepare_data(path)
