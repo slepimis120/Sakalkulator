@@ -44,7 +44,6 @@ def create_model():
 
     model = models.Sequential()
 
-    # convolutional layers
     model.add(layers.Conv2D(16, (3, 3), activation='relu', input_shape=(224, 224, 3)))
     model.add(layers.MaxPooling2D((2, 2)))
 
@@ -66,9 +65,6 @@ def create_model():
     model.add(layers.Dense(512, activation='relu'))
     model.add(layers.Dropout(0.6))
 
-    # model.add(layers.Dense(512, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(0.003)))
-    # model.add(layers.Dropout(0.5))
-
     model.add(layers.Dense(14, activation='softmax'))
 
     return model
@@ -87,7 +83,7 @@ def train_model(path):
     early_stopping = EarlyStopping(monitor='val_accuracy', mode='max', restore_best_weights=True, patience=400)
 
     # train the model
-    model.fit(
+    history = model.fit(
         x_train, y_train,
         epochs=400,
         batch_size=64,
@@ -95,8 +91,15 @@ def train_model(path):
         callbacks=[early_stopping],
         verbose=1
     )
+    model.save('cnn_model.h5')
+    print_evaluation(x_val, y_val, history)
+    return model
 
-    y_val_pred = model.predict(x_val)
+
+def print_evaluation(x_val, y_val, history):
+    best_model = tf.keras.models.load_model('cnn_model.h5')
+
+    y_val_pred = best_model.predict(x_val)
     y_val_pred_classes = np.argmax(y_val_pred, axis=1)
     y_val_true_classes = np.argmax(y_val, axis=1)
 
@@ -104,19 +107,16 @@ def train_model(path):
     recall = recall_score(y_val_true_classes, y_val_pred_classes, average='weighted')
     f1 = f1_score(y_val_true_classes, y_val_pred_classes, average='weighted')
 
+    print(f'Best Validation Accuracy: {np.max(history.history["val_accuracy"]):.4f}')
     print(f'Precision: {precision:.4f}')
     print(f'Recall: {recall:.4f}')
     print(f'F1 Score: {f1:.4f}')
 
-    return model
-
 
 def get_model(path):
-    model = train_model(path)
-    model.save('cnn_model.h5')
-    return model
+    return train_model(path)
 
 
 if __name__ == '__main__':
     path = './data/video/training_data'
-    model = get_model(path)
+    get_model(path)
