@@ -7,6 +7,8 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
 from tensorflow.keras.utils import to_categorical
 from sklearn.model_selection import train_test_split
+from keras.layers import Conv2D, MaxPooling2D, Dropout, Dense, Flatten
+from keras.regularizers import l2
 
 
 def prepare_data(path):
@@ -43,24 +45,31 @@ def create_model():
     model = models.Sequential()
 
     # Convolutional layers
+    model.add(layers.Conv2D(16, (3, 3), activation='relu', input_shape=(224, 224, 3)))
+    model.add(layers.MaxPooling2D((2, 2)))
+
     model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(224, 224, 3)))
     model.add(layers.MaxPooling2D((2, 2)))
 
-    model.add(layers.Conv2D(64, (3, 3), activation='relu'))
+    model.add(layers.Conv2D(64, (3, 3), activation='relu', input_shape=(224, 224, 3)))
     model.add(layers.MaxPooling2D((2, 2)))
 
-    model.add(layers.Conv2D(128, (3, 3), activation='relu'))
+    model.add(layers.Conv2D(128, (3, 3), activation='relu', input_shape=(224, 224, 3)))
     model.add(layers.MaxPooling2D((2, 2)))
+
+    # model.add(Conv2D(filters=32, kernel_size=(5, 5), strides=(1, 1), kernel_regularizer=l2(0.003), activation='relu'))
+    # model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
 
     # Flatten layer
     model.add(layers.Flatten())
 
     # Dense layers
     model.add(layers.Dense(512, activation='relu'))
-    model.add(layers.Dropout(0.5))
+    model.add(layers.Dropout(0.6))
 
-    # model.add(layers.Dense(512, activation='relu', kernel_regularizer='l2'))  # to reduce overfitting
-    # model.add(layers.Dropout(0.5))
+    model.add(layers.Dense(512, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(0.003)))
+
+    model.add(layers.Dropout(0.5))
 
     model.add(layers.Dense(14, activation='softmax'))
 
@@ -72,37 +81,38 @@ def train_model(path):
     x_train, x_val, y_train, y_val = split_dataset(images, labels, class_mapping)
     model = create_model()
 
-    model.compile(optimizer='adam',
+    optimizer = tf.keras.optimizers.Adam(learning_rate=1e-4)
+
+    model.compile(optimizer=optimizer,
                   loss='categorical_crossentropy',
                   metrics=['accuracy'])
 
     # ImageDataGenerator for data augmentation and preprocessing
     datagen = ImageDataGenerator(rescale=1. / 255,
                                  rotation_range=20,
-                                 width_shift_range=0.2,
-                                 height_shift_range=0.2,
+                                 # width_shift_range=0.2,
+                                 # height_shift_range=0.2,
                                  shear_range=0.2,
-                                 zoom_range=0.2,
+                                 # zoom_range=0.2,
                                  horizontal_flip=True,
+                                 vertical_flip=True,
                                  fill_mode='nearest')
 
-    # train_generator = datagen.flow_from_directory(
-    #     path,
-    #     target_size=(224, 224),  # Resize images to a consistent size
-    #     batch_size=32,
-    #     class_mode='categorical'  # Assumes you have one folder per class in your dataset
-    # )
-    train_generator = datagen.flow(x_train, y_train, batch_size=32)
+    datagen_val = ImageDataGenerator(rescale=1. / 255)  # No augmentation for validation data
+
+    train_generator = datagen.flow(x_train, y_train, batch_size=16)
+    val_generator = datagen_val.flow(x_val, y_val, batch_size=16)
     # ...
 
     # early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
     # train the model
     # history = model.fit(
     #     train_generator,
-    #     epochs=1000,
-    #     # batch_size=32,
+    #     epochs=200,
+    #     batch_size=32,
     #     steps_per_epoch=len(train_generator),
-    #     validation_data=(x_val, y_val),
+    #     validation_data=val_generator,
+    #     validation_steps=len(val_generator),
     #     # callbacks=[early_stopping],
     #     verbose=1
     # )
@@ -110,7 +120,7 @@ def train_model(path):
     # Train the model
     history = model.fit(
         x_train, y_train,
-        epochs=1000,  # Adjust as needed
+        epochs=200,
         batch_size=32,
         validation_data=(x_val, y_val),
         verbose=1
