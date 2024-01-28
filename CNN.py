@@ -41,10 +41,9 @@ def split_dataset(images, labels, class_mapping):
 def create_model():
     tf.random.set_seed(42)
 
-    # Define the model
     model = models.Sequential()
 
-    # Convolutional layers
+    # convolutional layers
     model.add(layers.Conv2D(16, (3, 3), activation='relu', input_shape=(224, 224, 3)))
     model.add(layers.MaxPooling2D((2, 2)))
 
@@ -57,19 +56,17 @@ def create_model():
     model.add(layers.Conv2D(128, (3, 3), activation='relu', input_shape=(224, 224, 3)))
     model.add(layers.MaxPooling2D((2, 2)))
 
-    # model.add(Conv2D(filters=32, kernel_size=(5, 5), strides=(1, 1), kernel_regularizer=l2(0.003), activation='relu'))
-    # model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+    model.add(Conv2D(filters=32, kernel_size=(5, 5), strides=(1, 1), kernel_regularizer=l2(0.003), activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
 
-    # Flatten layer
+    # multi-dim to one-dim (before dense layers)
     model.add(layers.Flatten())
 
-    # Dense layers
     model.add(layers.Dense(512, activation='relu'))
     model.add(layers.Dropout(0.6))
 
-    model.add(layers.Dense(512, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(0.003)))
-
-    model.add(layers.Dropout(0.5))
+    # model.add(layers.Dense(512, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(0.003)))
+    # model.add(layers.Dropout(0.5))
 
     model.add(layers.Dense(14, activation='softmax'))
 
@@ -81,9 +78,7 @@ def train_model(path):
     x_train, x_val, y_train, y_val = split_dataset(images, labels, class_mapping)
     model = create_model()
 
-    optimizer = tf.keras.optimizers.Adam(learning_rate=1e-4)
-
-    model.compile(optimizer=optimizer,
+    model.compile(optimizer='adam',
                   loss='categorical_crossentropy',
                   metrics=['accuracy'])
 
@@ -120,8 +115,8 @@ def train_model(path):
     # Train the model
     history = model.fit(
         x_train, y_train,
-        epochs=200,
-        batch_size=32,
+        epochs=400,
+        batch_size=64,
         validation_data=(x_val, y_val),
         verbose=1
     )
