@@ -16,9 +16,7 @@ def prepare_data(path):
     image_files = [f for f in os.listdir(path) if f.endswith('.jpg')]
     images = []
     labels = []
-    # because training uses numeric labels
-    class_mapping = {"0": 0, "1": 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9, "Puta": 10,
-                     "PodeljenoSa": 11, "Minus": 12, "Plus": 13}
+    class_mapping = {}
 
     for image in image_files:
         image_path = os.path.join(path, image)
@@ -26,7 +24,10 @@ def prepare_data(path):
         img_array = img_to_array(img) / 255.0
         images.append(img_array)
         label = image.split('_')[0]
+        if label not in class_mapping:
+            class_mapping[label] = len(class_mapping)
         labels.append(class_mapping[label])
+
 
     return images, labels, class_mapping
 
@@ -65,7 +66,7 @@ def create_model():
     model.add(layers.Dense(512, activation='relu'))
     model.add(layers.Dropout(0.6))
 
-    model.add(layers.Dense(14, activation='softmax'))
+    model.add(layers.Dense(15, activation='softmax'))
 
     return model
 
@@ -91,13 +92,13 @@ def train_model(path):
         callbacks=[early_stopping],
         verbose=1
     )
-    model.save('cnn_model.h5')
+    model.save('./data/model/cnn_model.h5')
     print_evaluation(x_val, y_val, history)
     return model
 
 
 def print_evaluation(x_val, y_val, history):
-    best_model = tf.keras.models.load_model('cnn_model.h5')
+    best_model = tf.keras.models.load_model('data/model/cnn_model.h5')
 
     y_val_pred = best_model.predict(x_val)
     y_val_pred_classes = np.argmax(y_val_pred, axis=1)
@@ -115,8 +116,3 @@ def print_evaluation(x_val, y_val, history):
 
 def get_model(path):
     return train_model(path)
-
-
-if __name__ == '__main__':
-    path = './data/video/training_data'
-    get_model(path)

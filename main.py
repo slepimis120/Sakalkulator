@@ -1,5 +1,6 @@
 from helper.audio_capture import record_voice, save_recording
 from helper.video_capture import record_video
+from CNN import get_model
 
 
 def meni():
@@ -33,7 +34,9 @@ def meni():
 def meni_1():
     print("Treniranje slika počelo...")
 
-    # todo zovni funkciju za treniranje
+    # TODO: path preuzeti kao parametar
+    path = './data/video/training_data'
+    model = get_model(path)
 
     print("Završeno treniranje!")
 
