@@ -1,13 +1,14 @@
 from helper.audio_capture import record_voice, save_recording
 from helper.video_capture import record_video
 from CNN import get_model
+from video_calculator import test_video
 
 
 def meni():
     print("-"*20 + "Meni" + 20*"-")
     print("1. Istreniraj model za klasifikaciju slika (CNN)")
     print("2. Istreniraj model za klasifikaciju zvuka (SVM)")
-    print("3. Testiraj rad kalkulatora nad skupom videa")
+    print("3. Testiraj rad kalkulatora nad video skupom")
     print("4. Testiraj rad kalkulatora nad audio skupom")
     print("5. Snimi video i saznaj odgovor Sakalkulatora!")
     print("6. Snimi zvuk i saznaj odgovor Sakalkulatora!")
@@ -39,6 +40,7 @@ def meni_1():
     model = get_model(path)
 
     print("Završeno treniranje!")
+    print("Vraćeni ste na glavni meni")
 
 
 def meni_2():
@@ -47,14 +49,16 @@ def meni_2():
     # todo zovni funkciju za treniranje
 
     print("Završeno treniranje!")
+    print("Vraćeni ste na glavni meni")
 
 
 def meni_3():
     print("Testiranje videa počelo...")
 
-    # todo zovni funkciju za testiranje videa
+    test_video("data/video/testing_data/")
 
     print("Završeno testiranje!")
+    print("Vraćeni ste na glavni meni")
 
 
 def meni_4():
@@ -63,17 +67,20 @@ def meni_4():
     # todo zovni funkciju za testiranje zvuka
 
     print("Završeno testiranje!")
+    print("Vraćeni ste na glavni meni")
 
 
 def meni_5():
     record_video()
     # todo obradi ovo sto se snimilo i prikazi rezultat
+    print("Vraćeni ste na glavni meni")
 
 
 def meni_6():
     captured_audio = record_voice()
     save_recording(captured_audio)
     # todo obradi ovo sto se snimilo i prikazi rezultat
+    print("Vraćeni ste na glavni meni")
 
 
 if __name__ == '__main__':
