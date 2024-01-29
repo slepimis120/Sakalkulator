@@ -31,7 +31,7 @@ def preprocess_frame(frame):
     return frame_array
 
 
-def analyse_video(video_path, frame_interval_seconds):
+def process_video(video_path, frame_interval_seconds):
     model = tf.keras.models.load_model('data/model/cnn_model.h5')
     last_gesture = None
     all_gestures = []
@@ -111,11 +111,10 @@ def calculate_accuracy(results, csv_results):
             i += 1
         if len(csv_result) != len(predicted):
             total_predictions += abs(len(csv_result) - len(predicted))
-    return correct_predictions/total_predictions
+    return round(correct_predictions/total_predictions, 4)
 
 
-if __name__ == "__main__":
-    directory_path = "data/video/testing_data/"
+def test_video(directory_path="data/video/testing_data/"):
     csv_file = "res.csv"
     csv_results = load_csv(directory_path + csv_file)
     results = {}
@@ -123,7 +122,7 @@ if __name__ == "__main__":
         if f == csv_file:
             continue
         print("\n" + f + ":")
-        gestures = analyse_video(directory_path + "/" + f, 0.5)
+        gestures = process_video(directory_path + "/" + f, 0.5)
         result = ""
         for gesture in gestures:
             result += class_mapping[gesture[0]]
@@ -131,4 +130,8 @@ if __name__ == "__main__":
         results[f] = result
         print(result)
     accuracy = calculate_accuracy(results, csv_results)
-    print(accuracy)
+    print("\nAccuracy: " + str(accuracy))
+
+
+if __name__ == "__main__":
+    test_video("data/video/testing_data/")
