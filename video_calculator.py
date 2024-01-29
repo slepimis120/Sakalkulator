@@ -122,7 +122,7 @@ def test_video(directory_path="data/video/testing_data/"):
         if f == csv_file:
             continue
         print("\n" + f + ":")
-        gestures = process_video(directory_path + "/" + f, 0.5)
+        gestures = process_video(directory_path + f, 0.5)
         result = ""
         for gesture in gestures:
             result += class_mapping[gesture[0]]
