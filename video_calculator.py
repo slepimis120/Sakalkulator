@@ -1,3 +1,4 @@
+import csv
 import os
 
 import cv2
@@ -6,24 +7,31 @@ import numpy as np
 from keras.preprocessing.image import img_to_array
 
 class_mapping = {0: "0", 1: "1", 2: "2", 3: "3", 4: "4", 5: "5", 6: "6", 7: "7", 8: "8", 9: "9", 10: "-",
-                     11: "no", 12: "+", 13: "/", 14: "*"}
+                     11: "n", 12: "+", 13: "/", 14: "*"}
+
+
+def load_csv(csv_path="data/video/testing_data/res.csv"):
+    data = {}
+    csv_file = open(csv_path, 'r', encoding='utf-8')
+    csv_reader = csv.reader(csv_file)
+
+    next(csv_reader)  # preskoci zaglavlje
+    for row in csv_reader:
+        data[row[0]] = row[1]
+
+    return data
 
 
 def preprocess_frame(frame):
     frame = cv2.resize(frame, (224, 224))
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     frame = cv2.convertScaleAbs(frame, alpha=1.2, beta=30)
-    kernel = np.array([[-1, -1, -1],
-                       [-1, 9, -1],
-                       [-1, -1, -1]])
-    # Apply the sharpening kernel
-    frame = cv2.filter2D(frame, -1, kernel)
     frame_array = img_to_array(frame) / 255.0
     frame_array = np.expand_dims(frame_array, axis=0)
     return frame_array
 
 
-def analyse_video(video_path):
+def analyse_video(video_path, frame_interval_seconds):
     model = tf.keras.models.load_model('data/model/cnn_model.h5')
     last_gesture = None
     all_gestures = []
@@ -33,17 +41,22 @@ def analyse_video(video_path):
     cap.set(1, frame_num)
 
     # Get frames per second (fps) of the video
-    # fps = cap.get(cv2.CAP_PROP_FPS)
-    # frame_interval = int(fps)
+    frame_rate = cap.get(cv2.CAP_PROP_FPS)
+    frame_interval = int(frame_rate * frame_interval_seconds)
 
     # frame by frame video analysis
     while True:
         frame_num += 1
         grabbed, frame = cap.read()
+
         if not grabbed:
             break
-        # if frame_num % frame_interval != 0:
-        #     continue
+        if frame_rate <= 0:
+            print("Warning: Unable to determine video frame rate. Defaulting to 30 frames per second.")
+            frame_rate = 30
+        if frame_num % frame_interval != 0:
+            continue
+
         frame = preprocess_frame(frame)
         pred_classes = model.predict(frame, verbose=0)
         max_prob = np.max(pred_classes, axis=1)
@@ -56,12 +69,66 @@ def analyse_video(video_path):
     return all_gestures
 
 
+def process_result(input_string):
+    i = 0
+    prev_char = ''
+    result_string = ""
+
+    if not input_string or input_string == '':
+        return ""
+
+    while i < len(input_string):
+        char = input_string[i]
+        i += 1
+        # number after number is not allowed. There must be an operation or "n" between numbers
+        if char.isdigit() and prev_char.isdigit():
+            prev_char = char
+            continue
+        # after operation/n must go a number
+        if not char.isdigit() and not prev_char.isdigit():
+            prev_char = char
+            continue
+        # first thing in a result must be a number
+        if result_string == "" and not char.isdigit():
+            prev_char = char
+            continue
+        if char != "n":
+            result_string += char
+        prev_char = char
+    return result_string
+
+
+def calculate_accuracy(results, csv_results):
+    correct_predictions = 0
+    total_predictions = 0
+    for f, predicted in results.items():
+        csv_result = csv_results[f[0:-4]]
+        i = 0
+        while i < min(len(csv_result), len(predicted)):
+            if predicted[i] == csv_result[i]:
+                correct_predictions += 1
+            total_predictions += 1
+            i += 1
+        if len(csv_result) != len(predicted):
+            total_predictions += abs(len(csv_result) - len(predicted))
+    return correct_predictions/total_predictions
+
+
 if __name__ == "__main__":
-    directory_path = "data/video/testing_data"
+    directory_path = "data/video/testing_data/"
+    csv_file = "res.csv"
+    csv_results = load_csv(directory_path + csv_file)
+    results = {}
     for f in os.listdir(directory_path):
+        if f == csv_file:
+            continue
         print("\n" + f + ":")
-        gestures = analyse_video(directory_path + "/" + f)
+        gestures = analyse_video(directory_path + "/" + f, 0.5)
         result = ""
         for gesture in gestures:
             result += class_mapping[gesture[0]]
+        result = process_result(result)
+        results[f] = result
         print(result)
+    accuracy = calculate_accuracy(results, csv_results)
+    print(accuracy)
