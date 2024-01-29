@@ -1,4 +1,6 @@
 import os
+
+import joblib
 import librosa
 from sklearn.svm import SVC
 from sklearn.preprocessing import StandardScaler
@@ -45,9 +47,14 @@ def predict_audio():
     print(f"Number of testing samples: {len(X_test)}")
 
     model = train_svm(X_train, y_train)
+    joblib.dump(model, './data/model/svm_model.h5')
 
     y_pred_train = model.predict(X_train)
     print("Train Accuracy:", metrics.accuracy_score(y_train, y_pred_train))
 
     y_pred_test = model.predict(X_test)
     print("Test Accuracy:", metrics.accuracy_score(y_test, y_pred_test))
+
+
+if __name__ == '__main__':
+    predict_audio()

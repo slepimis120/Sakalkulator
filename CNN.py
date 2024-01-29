@@ -116,3 +116,8 @@ def print_evaluation(x_val, y_val, history):
 
 def get_model(path):
     return train_model(path)
+
+
+if __name__ == '__main__':
+    path = './data/video/training_data'
+    get_model(path)
