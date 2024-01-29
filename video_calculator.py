@@ -6,20 +6,10 @@ import tensorflow as tf
 import numpy as np
 from keras.preprocessing.image import img_to_array
 
+from helper.common_functions import load_csv, calculate_accuracy
+
 class_mapping = {0: "0", 1: "1", 2: "2", 3: "3", 4: "4", 5: "5", 6: "6", 7: "7", 8: "8", 9: "9", 10: "-",
                      11: "n", 12: "+", 13: "/", 14: "*"}
-
-
-def load_csv(csv_path="data/video/testing_data/res.csv"):
-    data = {}
-    csv_file = open(csv_path, 'r', encoding='utf-8')
-    csv_reader = csv.reader(csv_file)
-
-    next(csv_reader)  # preskoci zaglavlje
-    for row in csv_reader:
-        data[row[0]] = row[1]
-
-    return data
 
 
 def preprocess_frame(frame):
@@ -98,30 +88,16 @@ def process_result(input_string):
     return result_string
 
 
-def calculate_accuracy(results, csv_results):
-    correct_predictions = 0
-    total_predictions = 0
-    for f, predicted in results.items():
-        csv_result = csv_results[f[0:-4]]
-        i = 0
-        while i < min(len(csv_result), len(predicted)):
-            if predicted[i] == csv_result[i]:
-                correct_predictions += 1
-            total_predictions += 1
-            i += 1
-        if len(csv_result) != len(predicted):
-            total_predictions += abs(len(csv_result) - len(predicted))
-    return round(correct_predictions/total_predictions, 4)
-
-
 def test_video(directory_path="data/video/testing_data/"):
     csv_file = "res.csv"
     csv_results = load_csv(directory_path + csv_file)
     results = {}
+
     for f in os.listdir(directory_path):
         if f == csv_file:
             continue
         print("\n" + f + ":")
+
         gestures = process_video(directory_path + f, 0.5)
         result = ""
         for gesture in gestures:
@@ -129,6 +105,7 @@ def test_video(directory_path="data/video/testing_data/"):
         result = process_result(result)
         results[f] = result
         print(result)
+
     accuracy = calculate_accuracy(results, csv_results)
     print("\nAccuracy: " + str(accuracy))
 

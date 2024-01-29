@@ -1,5 +1,6 @@
-from helper.audio_capture import record_voice, save_recording
-from helper.video_capture import record_video
+from audio_calculator import test_audio
+from helper.audio_capturer import record_voice, save_recording
+from helper.video_capturer import record_video
 from CNN import get_model
 from video_calculator import test_video
 
@@ -29,6 +30,7 @@ def meni():
         elif user_input == '6':
             meni_6()
         elif user_input == '7':
+            print("Do idućeg druženja !")
             break
 
 
@@ -64,7 +66,7 @@ def meni_3():
 def meni_4():
     print("Testiranje zvuka počelo...")
 
-    # todo zovni funkciju za testiranje zvuka
+    test_audio("data/audio/testing_data/")
 
     print("Završeno testiranje!")
     print("Vraćeni ste na glavni meni")
