@@ -6,7 +6,7 @@ import librosa
 from sklearn.preprocessing import StandardScaler
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
-from helper.common_functions import delete_files_in_folder, load_csv, calculate_accuracy
+from helper.common_functions import delete_files_in_folder, load_csv, calculate_accuracy, print_calculation
 
 class_mapping = {"0": "0", "1": "1", "2": "2", "3": "3", "4": "4", "5": "5", "6": "6", "7": "7", "8": "8", "9": "9",
                  "Puta": "*", "PodeljenoSa": "/", "Minus": "-", "Plus": "+"}
@@ -69,7 +69,7 @@ def test_audio(directory_path="data/audio/testing_data/"):
         for p in predictions:
             result += class_mapping[p]
         results[f] = result
-        print(result)
+        print_calculation(result)
     accuracy = calculate_accuracy(results, csv_results)
     print("\nAccuracy: " + str(accuracy))
 
@@ -79,8 +79,8 @@ def calculate(path):
     result = ""
     for p in predictions:
         result += class_mapping[p]
-    print('-' * 100)
-    print(result)
+    print('-' * 44)
+    print_calculation(result)
 
 
 if __name__ == "__main__":

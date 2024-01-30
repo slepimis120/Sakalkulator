@@ -43,3 +43,10 @@ def calculate_accuracy(results, csv_results):
         if len(csv_result) != len(predicted):
             total_predictions += abs(len(csv_result) - len(predicted))
     return round(correct_predictions/total_predictions, 4)
+
+
+def print_calculation(result):
+    try:
+        print(result + " =", eval(result))
+    except Exception as e:
+        print(result)

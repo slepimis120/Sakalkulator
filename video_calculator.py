@@ -6,7 +6,7 @@ import tensorflow as tf
 import numpy as np
 from keras.preprocessing.image import img_to_array
 
-from helper.common_functions import load_csv, calculate_accuracy
+from helper.common_functions import load_csv, calculate_accuracy, print_calculation
 
 class_mapping = {0: "0", 1: "1", 2: "2", 3: "3", 4: "4", 5: "5", 6: "6", 7: "7", 8: "8", 9: "9", 10: "-",
                      11: "n", 12: "+", 13: "/", 14: "*"}
@@ -104,7 +104,7 @@ def test_video(directory_path="data/video/testing_data/"):
             result += class_mapping[gesture[0]]
         result = process_result(result)
         results[f] = result
-        print(result)
+        print_calculation(result)
 
     accuracy = calculate_accuracy(results, csv_results)
     print("\nAccuracy: " + str(accuracy))
@@ -116,8 +116,8 @@ def calculate(path):
     for gesture in gestures:
         result += class_mapping[gesture[0]]
     result = process_result(result)
-    print('-'*100)
-    print(result)
+    print('-'*44)
+    print_calculation(result)
 
 
 if __name__ == "__main__":

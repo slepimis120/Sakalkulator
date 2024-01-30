@@ -3,21 +3,22 @@ from audio_calculator import calculate as ac
 from helper.audio_capturer import record_voice, save_recording
 from helper.video_capturer import record_video
 from CNN import get_model
+from SVM import get_audio_model
 from video_calculator import test_video
 from video_calculator import calculate as vc
 
 
 def meni():
-    print("-"*20 + "Meni" + 20*"-")
-    print("1. Istreniraj model za klasifikaciju slika (CNN)")
-    print("2. Istreniraj model za klasifikaciju zvuka (SVM)")
-    print("3. Testiraj rad kalkulatora nad video skupom")
-    print("4. Testiraj rad kalkulatora nad audio skupom")
-    print("5. Snimi video i saznaj odgovor Sakalkulatora!")
-    print("6. Snimi zvuk i saznaj odgovor Sakalkulatora!")
-    print("7. Bye Sakalkulatoru :( ")
-
     while True:
+        print("")
+        print("-" * 20 + "Meni" + 20 * "-")
+        print("1. Istreniraj model za klasifikaciju slika (CNN)")
+        print("2. Istreniraj model za klasifikaciju zvuka (SVM)")
+        print("3. Testiraj rad kalkulatora nad video skupom")
+        print("4. Testiraj rad kalkulatora nad audio skupom")
+        print("5. Snimi video i saznaj odgovor Sakalkulatora!")
+        print("6. Snimi zvuk i saznaj odgovor Sakalkulatora!")
+        print("7. Bye Sakalkulatoru :( ")
         user_input = input()
         if user_input == '1':
             meni_1()
@@ -51,6 +52,8 @@ def meni_2():
     print("Treniranje zvuka počelo...")
 
     # todo zovni funkciju za treniranje
+    path = './data/audio/training_data'
+    get_audio_model(path)
 
     print("Završeno treniranje!")
     print("Vraćeni ste na glavni meni")
