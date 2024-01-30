@@ -74,6 +74,15 @@ def test_audio(directory_path="data/audio/testing_data/"):
     print("\nAccuracy: " + str(accuracy))
 
 
+def calculate(path):
+    predictions = process_audio(path, '')
+    result = ""
+    for p in predictions:
+        result += class_mapping[p]
+    print('-' * 100)
+    print(result)
+
+
 if __name__ == "__main__":
     test_audio("data/audio/testing_data/")
 

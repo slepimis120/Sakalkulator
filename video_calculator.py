@@ -110,5 +110,15 @@ def test_video(directory_path="data/video/testing_data/"):
     print("\nAccuracy: " + str(accuracy))
 
 
+def calculate(path):
+    gestures = process_video(path, 0.5)
+    result = ""
+    for gesture in gestures:
+        result += class_mapping[gesture[0]]
+    result = process_result(result)
+    print('-'*100)
+    print(result)
+
+
 if __name__ == "__main__":
     test_video("data/video/testing_data/")

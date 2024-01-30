@@ -1,8 +1,10 @@
 from audio_calculator import test_audio
+from audio_calculator import calculate as ac
 from helper.audio_capturer import record_voice, save_recording
 from helper.video_capturer import record_video
 from CNN import get_model
 from video_calculator import test_video
+from video_calculator import calculate as vc
 
 
 def meni():
@@ -74,14 +76,14 @@ def meni_4():
 
 def meni_5():
     record_video()
-    # todo obradi ovo sto se snimilo i prikazi rezultat
+    vc("./data/captured_video.mp4")
     print("Vraćeni ste na glavni meni")
 
 
 def meni_6():
     captured_audio = record_voice()
     save_recording(captured_audio)
-    # todo obradi ovo sto se snimilo i prikazi rezultat
+    ac("./data/captured_audio.wav")
     print("Vraćeni ste na glavni meni")
 
 
