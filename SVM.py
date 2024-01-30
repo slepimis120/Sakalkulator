@@ -10,8 +10,7 @@ from sklearn import metrics
 import numpy as np
 
 
-def read_data():
-    path = 'data/audio/training_data'
+def read_data(path):
     audio_files = [f for f in os.listdir(path) if f.endswith('.mp3')]
     features = []
     labels = []
@@ -40,21 +39,12 @@ def train_svm(X_train, y_train):
     return model
 
 
-def predict_audio():
-    X_train, X_test, y_train, y_test = read_data()
-
-    print(f"Number of training samples: {len(X_train)}")
-    print(f"Number of testing samples: {len(X_test)}")
+def get_audio_model(path):
+    X_train, X_test, y_train, y_test = read_data(path)
 
     model = train_svm(X_train, y_train)
     joblib.dump(model, './data/model/svm_model.h5')
 
     y_pred_train = model.predict(X_train)
-    print("Train Accuracy:", metrics.accuracy_score(y_train, y_pred_train))
 
     y_pred_test = model.predict(X_test)
-    print("Test Accuracy:", metrics.accuracy_score(y_test, y_pred_test))
-
-
-if __name__ == '__main__':
-    predict_audio()
